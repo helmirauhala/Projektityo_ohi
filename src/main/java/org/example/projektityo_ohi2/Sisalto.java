@@ -54,4 +54,8 @@ public class Sisalto {
         this.maara = maara;
     }
 
+    @Override
+    public String toString() {
+        return nimi + " " + maara;
+    }
 }

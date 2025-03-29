@@ -1,6 +1,7 @@
 package org.example.projektityo_ohi2;
 
 import javafx.application.Application;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -49,11 +50,42 @@ public class Ikkuna extends Application {
                 inputField.clear();
                 var itms = listView.getItems().toArray();
                 quantityField.clear();
-                //showAlert()
 
             }
         });
 
+        listView.getSelectionModel().selectedItemProperty().addListener((obs, oldSisalto, newSisaltoo) -> {
+            if (newSisaltoo != null){
+                inputField.setText(newSisaltoo.getNimi());
+                quantityField.setText(String.valueOf(newSisaltoo.getMaara()));
+            }
+        });
+
+        PoistaButton.setOnAction(e ->{
+            Sisalto selectedSisalto = listView.getSelectionModel().getSelectedItem();
+            if (selectedSisalto != null){
+                matkalaukku.removeSisalto(selectedSisalto);
+                listView.getItems().remove(selectedSisalto);
+                inputField.clear();
+                quantityField.clear();
+            }
+        });
+
+        PaivitaButton.setOnAction(e -> {
+            Sisalto selectedSisalto = listView.getSelectionModel().getSelectedItem();
+            if (selectedSisalto != null) {
+                String updatedNimi = inputField.getText();
+                String updatedMaaraText = quantityField.getText();
+                if (!updatedNimi.isEmpty() && !updatedMaaraText.isEmpty()) {
+                    int updatedMaara = Integer.parseInt(updatedMaaraText);
+                    Sisalto updatedItem = new Sisalto(updatedNimi, updatedMaara);
+                    matkalaukku.updateSisalto(selectedSisalto, updatedItem);
+                    listView.getItems().set(listView.getSelectionModel().getSelectedIndex(), updatedItem); // Update
+                    // ListView
+                    inputField.clear();
+                    quantityField.clear(); }
+            }
+        });
 
         VBox vbox=new VBox(10, inputField, quantityField, LisaaButton, PaivitaButton, PoistaButton, listView);
 
