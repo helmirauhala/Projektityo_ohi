@@ -2,16 +2,23 @@ package org.example.projektityo_ohi2;
 
 import javafx.scene.paint.Color;
 
-public class Sisalto {
+import java.io.Serializable;
+import java.util.ArrayList;
+
+public class Sisalto implements Serializable {
     //private int ID;
     private String nimi;
-    //private skanneri.Tyyppi vaatetyyppi;
+    private skanneri.Tyyppi vaatetyyppi;
    // private Color vari;
     private int maara;
 
     public Sisalto(String nimi, int maara) {
+        this(nimi, maara, skanneri.Tyyppi.Muu);
+    }
+    public Sisalto(String nimi, int maara, skanneri.Tyyppi vaatetyyppi) {
         this.nimi = nimi;
         this.maara = maara;
+        this.vaatetyyppi = vaatetyyppi;
     }
 
 //    public int getID() {
@@ -30,14 +37,14 @@ public class Sisalto {
         this.nimi = nimi;
     }
 
-//    public skanneri.Tyyppi getVaatetyyppi() {
-//        return vaatetyyppi;
-//    }
-//
-//    public void setVaatetyyppi(skanneri.Tyyppi vaatetyyppi) {
-//        this.vaatetyyppi = vaatetyyppi;
-//    }
-//
+   public skanneri.Tyyppi getVaatetyyppi() {
+      return vaatetyyppi;
+   }
+
+    public void setVaatetyyppi(skanneri.Tyyppi vaatetyyppi) {
+        this.vaatetyyppi = vaatetyyppi;
+    }
+
 //    public Color getVari() {
 //        return vari;
 //    }
@@ -56,6 +63,6 @@ public class Sisalto {
 
     @Override
     public String toString() {
-        return nimi + " " + maara;
+        return vaatetyyppi + " " + nimi + " x" + maara;
     }
 }

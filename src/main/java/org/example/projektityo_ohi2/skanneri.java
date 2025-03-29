@@ -4,12 +4,8 @@ import javafx.application.Application;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
-public class skanneri extends Application {
+public class skanneri  {
 
-    @Override
-    public void start(Stage stage) throws Exception {
-
-    }
     enum Tyyppi{
         Paita,
         Kengät,
@@ -17,7 +13,8 @@ public class skanneri extends Application {
         Sukka,
         Housut,
         Hame,
-        Asusteet
+        Asusteet,
+        Muu,
     }
 
 }
