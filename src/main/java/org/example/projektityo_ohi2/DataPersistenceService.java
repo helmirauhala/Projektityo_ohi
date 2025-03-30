@@ -7,8 +7,13 @@ import java.util.List;
 public class DataPersistenceService implements IDataPersistenceService<Sisalto> {
 
     private static final String FILE_NAME= "matkalaukku.dat";
+    /*
+    Tämä ei ole toimivin tapa tehdä tässä sillä ylikirjoitamme kaiken ja sen jälkeen näyttä,
+    että olsin muutanut vain haluttua asiaa tideostossa.
+    Ei ole toivoin soissa tiedostoissa mutta tässä pinessä koossa se toimii vielä.
+     */
     @Override
-    public void saveData(List<Sisalto> data) {
+    public void saastaaData(List<Sisalto> data) {
         try (ObjectOutputStream outputStream= new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
             outputStream.writeObject(data);
         }
@@ -18,10 +23,10 @@ public class DataPersistenceService implements IDataPersistenceService<Sisalto> 
     }
 
     @Override
-    public List<Sisalto> loadData() {
+    public List<Sisalto> lataaData() {
         File file = new File(FILE_NAME);
         if (!file.exists()) {
-            // File doesn't exist, return empty list
+            // Jos Tiedostoa ei olemassa tai ei löydy niin palauta tyhjä lista.
             return new ArrayList<>();
         }
 
@@ -29,8 +34,8 @@ public class DataPersistenceService implements IDataPersistenceService<Sisalto> 
         try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file))) {
             sisaltoList = (List<Sisalto>) inputStream.readObject();
         } catch (IOException | ClassNotFoundException e) {
-            // Log or handle the exception, if necessary, but no need to throw it here
-            throw new RuntimeException("Error loading data from file", e);
+            // Tänne vaan poikeuksessa tilanteeesa ei normaalisti ei tule tämä ei tule vastaan poikkeusia varten siis
+            throw new RuntimeException("Virhe ladataessa dataa tiedostosta", e);
         }
 
         return sisaltoList;

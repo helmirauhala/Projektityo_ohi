@@ -1,37 +1,42 @@
 package org.example.projektityo_ohi2;
 
 import javafx.application.Application;
-import javafx.beans.value.ObservableValue;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
-import java.io.IOException;
 import java.util.List;
-import java.util.Stack;
 
+/**
+ * Seuraavaksi luon sen ikkunan java fx avulla mikä tulee esille.
+ * Ensin teen pääikkunan ja sitten
+ * Tämä on aloutus ikkuna ohjelmalle!!
+ */
 public class Ikkuna extends Application {
     private IDataPersistenceService<Sisalto> dataPersistence;
     Stage stage;
-    ListView<Sisalto> listView;
-
+    ListView<Sisalto> listView; //tämä on soitä varten että sisälöt asiat näytetään käyttäjälle
     BorderPane root = new BorderPane();
-    //ListView<String>
-
-    private  Matkalaukku matkalaukku;
+//Lutiin uusi Border joka tarjoaa käyttöliittymä asettelun
+    private  Matkalaukku matkalaukku; //ku
     @Override
+    /*
+    Seuraaksi luodaan teksti kentät johon tiedot syötetään nimi ja määrä tiedot
+     */
     public void start(Stage stage) throws Exception{
         matkalaukku = new Matkalaukku();
-        dataPersistence = new DataPersistenceService();
-        TextField inputField = new TextField();
-        inputField.setPromptText("NIMI");
-        TextField quantityField = new TextField();
-        quantityField.setPromptText("MÄÄRÄ");
+        dataPersistence = new DataPersistenceService(); //Huolehtii datan säilyttämisestä
+        TextField syottokentta = new TextField();
+        syottokentta.setPromptText("NIMI");
+        TextField maarakentta = new TextField();
+        maarakentta.setPromptText("MÄÄRÄ");
         ComboBox itemTypeComboBox = new ComboBox();
+
+        /*
+        Seuraavaksi teen buttonit eli napit jotka ovat koodattu lisäämää,
+        päivitämään ja poistamaan asioilta listalta
+         */
 
         itemTypeComboBox.getItems().addAll(matkalaukku.tyyppiOptions);
         itemTypeComboBox.getSelectionModel().selectLast();
@@ -39,97 +44,134 @@ public class Ikkuna extends Application {
         Button PaivitaButton = new Button("Päivitä tavara");
         Button PoistaButton = new Button("Poista tavara ");
 
-        listView = new ListView<>();
-        listView.setPrefHeight(200);
+        //Nyt määritellään buttonien koko
 
-        // read data from file if available
+        listView = new ListView<>();
+        listView.setPrefHeight(200); //määritetllään kentänkoko
+
+
+        //Nyt annetaan tehtävä miten lisaabutton toimii.
 
         LisaaButton.setOnAction(e -> {
-            String sisaltoNimi = inputField.getText();
-            String sisaltoMaara= quantityField.getText();
+            String sisaltoNimi = syottokentta.getText(); //Ottaa syötetyn tekstin kohdasta nimi
+            String sisaltoMaara= maarakentta.getText(); // Otta annetun arvon kohdasta Määrä
+            /**
+             * https://docs.oracle.com/en/java/javase/17/language/local-variable-type-inference.html
+             * Selitää miksi päätin käyttää var tässä kohtaa eli se pystyy itse päätellä minkä tyypiset ne on
+             * esim int vai string.
+             */
             var sisaltoTyyppi= (skanneri.Tyyppi)itemTypeComboBox.getSelectionModel().getSelectedItem();
-            if (!sisaltoNimi.isEmpty() && !sisaltoMaara.isEmpty()) {
-                int maara = Integer.parseInt(sisaltoMaara);
 
-                Sisalto newSisalto = new Sisalto(sisaltoNimi, maara, sisaltoTyyppi);
-                matkalaukku.addSisalto(newSisalto);
-                listView.getItems().add(newSisalto);
-                // write data to file
+            //Tarkistetaan että kumpikaan knetistä ei ole tyhjä ja arvo on yli 0 koska negatiivinne arvo ei ole järkevä tässä ohjelmassa
+            if (!sisaltoNimi.isEmpty() && !sisaltoMaara.isEmpty() && Integer.parseInt(sisaltoMaara) > 0) {
+                int maara = Integer.parseInt(sisaltoMaara); //nyt pass sen int tyypin eli ei ota vastaan aakosia
+
+                /*
+                Luodaan uusi sisältobjekti käyttäen syötettyjä tietoja.
+                 */
+                Sisalto uusiSisalto = new Sisalto(sisaltoNimi, maara, sisaltoTyyppi);
+                //Laiteaan uusi sisaltoobjekti matkalaukkuun.
+                matkalaukku.addSisalto(uusiSisalto);
+                listView.getItems().add(uusiSisalto);
+                // kirjoita data tiedostoon/file ja säästää ne sinne
                 saveSisaltosToFile();
-                inputField.clear();
-                var itms = listView.getItems().toArray();
-                quantityField.clear();
+                //Tyhjentää sen jälkeen nimi ja määrä kentän
+                syottokentta.clear();
+                maarakentta.clear();
 
             }
         });
 
-        listView.getSelectionModel().selectedItemProperty().addListener((obs, oldSisalto, newSisaltoo) -> {
-            if (newSisaltoo != null){
-                inputField.setText(newSisaltoo.getNimi());
-                quantityField.setText(String.valueOf(newSisaltoo.getMaara()));
+        /*
+        Päivtetään syöte/input ja määrä kentätä ja combobox valinta mätsäämään valittuja kohteita listVIewssä
+
+        * */
+        listView.getSelectionModel().selectedItemProperty().addListener((obs, oldSisalto, uusiSisaltoo) -> {
+            if (uusiSisaltoo != null){
+                syottokentta.setText(uusiSisaltoo.getNimi());
+                maarakentta.setText(String.valueOf(uusiSisaltoo.getMaara()));
+                itemTypeComboBox.setValue(uusiSisaltoo.getVaatetyyppi());
             }
         });
 
+        /*
+        POISTA button poistaa sisällön valitun sisältö listView to ja
+        selitety aikaiemmin taekmmin miten ylikitjoittaa koko tiedoston aina
+         */
         PoistaButton.setOnAction(e ->{
             Sisalto selectedSisalto = listView.getSelectionModel().getSelectedItem();
             if (selectedSisalto != null){
                 matkalaukku.removeSisalto(selectedSisalto);
                 listView.getItems().remove(selectedSisalto);
-                // write current data to file
+                // kirjoittaa tämän hetkisen datantiedostoon
                 saveSisaltosToFile();
-                inputField.clear();
-                quantityField.clear();
+                syottokentta.clear();
+                maarakentta.clear();
             }
         });
+
+        /*
+        Seuraavaksi päivitä nappi joka päivitää jo olemassa olevia tietoja.
+         */
 
         PaivitaButton.setOnAction(e -> {
             Sisalto selectedSisalto = listView.getSelectionModel().getSelectedItem();
             if (selectedSisalto != null) {
-                String updatedNimi = inputField.getText();
-                String updatedMaaraText = quantityField.getText();
-                if (!updatedNimi.isEmpty() && !updatedMaaraText.isEmpty()) {
-                    int updatedMaara = Integer.parseInt(updatedMaaraText);
+                String paivitaNimi = syottokentta.getText(); //Ottaa päivitetyn nimen
+                String paivitaMaara = maarakentta.getText(); //Ottaa päivitetyn määrn
+                /*
+                Ensin
+                 if (!sisaltoNimi.isEmpty() && !sisaltoMaara.isEmpty()
+                 */
+                if (!paivitaNimi.isEmpty() && !paivitaMaara.isEmpty()&& Integer.parseInt(paivitaMaara) > 0) {
+                    int updatedMaara = Integer.parseInt(paivitaMaara);
                     var updatedSisaltoTyyppi= (skanneri.Tyyppi)itemTypeComboBox.getSelectionModel().getSelectedItem();
-                    Sisalto updatedItem = new Sisalto(updatedNimi, updatedMaara,updatedSisaltoTyyppi);
+                    Sisalto updatedItem = new Sisalto(paivitaNimi, updatedMaara,updatedSisaltoTyyppi);
                     matkalaukku.updateSisalto(selectedSisalto, updatedItem);
+
                     listView.getItems().set(listView.getSelectionModel().getSelectedIndex(), updatedItem); // Update
-                    // write current data to file
+                    // kirjoitaa ne nyt data tiedostoon
                     saveSisaltosToFile();
-                    inputField.clear();
-                    quantityField.clear(); }
+                    syottokentta.clear();
+                    maarakentta.clear(); }
             }
         });
 
+        //ladataan sisältö tiedostosta ja  seuraavassa koodirivissä määrätään missä järjestyksessä ne esiintyy
         loadSisaltosFromFile();
-        VBox vbox=new VBox(10, itemTypeComboBox, inputField, quantityField, LisaaButton, PaivitaButton, PoistaButton, listView);
+        VBox vbox=new VBox(10, itemTypeComboBox, syottokentta, maarakentta, LisaaButton, PaivitaButton, PoistaButton, listView);
 
-        //StackPane stackPane=new StackPane();
         Scene scene = new Scene(vbox, 600, 400);
         stage.setTitle("Muistilista");
         stage.setScene(scene);
         stage.show();
+        //Tässä tein sen uloimmaisen osuuden java fx se ikkuna.
     }
 
-private void saveSisaltosToFile(){
-    dataPersistence.saveData((List<Sisalto>) matkalaukku.getSisaltos());
 
-    showAlert("Success", "Data saved successfully!", Alert.AlertType.INFORMATION);
+private void saveSisaltosToFile(){
+    dataPersistence.saastaaData((List<Sisalto>) matkalaukku.getSisaltos());
+
+    showAlert("Huomio", "Data säätetty onnistuneesti!", Alert.AlertType.INFORMATION);
 }
 
+    /**
+     *
+     */
     private void loadSisaltosFromFile() {
         try {
-            List<Sisalto> sisaltos = dataPersistence.loadData();
+            List<Sisalto> sisaltos = dataPersistence.lataaData();
             if (sisaltos.isEmpty()) {
-                showAlert("Information", "No data found in the file.", Alert.AlertType.INFORMATION);
+                showAlert("Huomio", "No data found in the file.", Alert.AlertType.INFORMATION);
             } else {
                 matkalaukku.setSisaltos(sisaltos);
                 listView.getItems().addAll(matkalaukku.getSisaltos());
                 listView.getSelectionModel().selectFirst();
-                showAlert("Success", "Data loaded successfully!", Alert.AlertType.INFORMATION);
+                showAlert("Huomio", "Data ladattu onnistuneesti!", Alert.AlertType.INFORMATION);
             }
         } catch (RuntimeException e) {
-            // This will catch any RuntimeException thrown by loadData()
-            showAlert("Error", "Error loading data: " + e.getMessage(), Alert.AlertType.ERROR);
+            // Huomaa kaikki  RuntimeException jotka loadData() on aiheuttanut
+            showAlert("Virhe", "Virhe dataa ladatessa: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
